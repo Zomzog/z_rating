@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <module>
-    <name>z_cookiesalert</name>
-    <displayName><![CDATA[Cookies Alert]]></displayName>
+    <name>z_rating</name>
+    <displayName><![CDATA[Product rating]]></displayName>
     <version><![CDATA[0.1.0]]></version>
-    <description><![CDATA[Cookies alert for users.]]></description>
+    <description><![CDATA[Product rating.]]></description>
     <author><![CDATA[Zomzog]]></author>
     <tab><![CDATA[front_office_features]]></tab>
 	<confirmUninstall><![CDATA[Are you sure you want to uninstall? :(]]></confirmUninstall>

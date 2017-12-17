@@ -1,0 +1,2 @@
+== z_rating
+Product rating module for prestashop

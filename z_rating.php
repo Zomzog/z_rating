@@ -49,15 +49,49 @@ class Z_Rating extends Module
             $this->warning = $this->l('No name provided');
     }
 
+    public function uninstall()
+    {
+        Db::getInstance()->execute('DROP TABLE IF EXISTS '._DB_PREFIX_.'z_rating');
+        return parent::uninstall();
+    }
+
     public function install()
     {
+        Logger::addLog('Start install', 2);
         if (Shop::isFeatureActive())
             Shop::setContext(Shop::CONTEXT_ALL);
 
-        return parent::install() &&
+        $installed  = parent::install() &&
             $this->registerHook('displayFooter') &&
-            $this->registerHook('header') &&
-            Configuration::updateValue('Z_PRODUCT_RATING_MESSAGE', 'En poursuivant votre navigation, vous acceptez l\'utilisation des cookies pour disposer de services et d\'offres adaptés à vos centres d\'intérêt.');
+            $this->registerHook('header');
+
+        if ($installed) {
+            Logger::addLog('2: installed ok', 2);
+            $this->createTable();
+            return true;
+        }
+        Logger::addLog('You failed !', 2);
+        return false;
+    }
+
+    private static function createTable()
+    {
+        Db::getInstance()->execute('
+		CREATE TABLE `'._DB_PREFIX_.'z_rating` (
+			`id_product` int(10) unsigned NOT NULL,
+			`id_shop` int(11) NOT NULL,
+			`id_customer` int(10) unsigned NOT NULL,
+			`id_order` int(10) unsigned NOT NULL,
+			`rate` INT NOT NULL,
+			`comment` VARCHAR(128),
+		PRIMARY KEY (`id_product`, `id_order`, `id_shop`),
+		INDEX `id_product` (`id_product`),
+		CONSTRAINT `z_rating_product` FOREIGN KEY (`id_product`) REFERENCES `'._DB_PREFIX_.'product` (`id_product`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+		CONSTRAINT `z_rating_shop` FOREIGN KEY (`id_shop`) REFERENCES `'._DB_PREFIX_.'shop` (`id_shop`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+		CONSTRAINT `z_rating_customer` FOREIGN KEY (`id_customer`) REFERENCES `'._DB_PREFIX_.'customer` (`id_customer`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+		CONSTRAINT `z_rating_order` FOREIGN KEY (`id_order`) REFERENCES `'._DB_PREFIX_.'orders` (`id_order`) ON DELETE NO ACTION ON UPDATE NO ACTION);
+		)  ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8;');
+        Logger::addLog('Create table OK', 1);
     }
 
     /**
@@ -74,7 +108,7 @@ class Z_Rating extends Module
                     'z_product_rating_message' => Configuration::get('Z_PRODUCT_RATING_MESSAGE'),
                 )
             );
-            return $this->display(__FILE__, 'z_cookiesalert.tpl');
+            return $this->display(__FILE__, 'z_rating.tpl');
         }
     }
 
@@ -96,13 +130,13 @@ class Z_Rating extends Module
         $output = null;
 
         if (Tools::isSubmit('submit' . $this->name)) {
-            $z_cookies_alert_name = (String)Tools::getValue('Z_PRODUCT_RATING_NAME');
-            if (!$z_cookies_alert_name
-                || empty($z_cookies_alert_name)
-                || !Validate::isGenericName($z_cookies_alert_name))
+            $z_rating_name = (String)Tools::getValue('Z_PRODUCT_RATING_NAME');
+            if (!$z_rating_name
+                || empty($z_rating_name)
+                || !Validate::isGenericName($z_rating_name))
                 $output .= $this->displayError($this->l('Invalid Configuration value'));
             else {
-                Configuration::updateValue('Z_PRODUCT_RATING_NAME', $z_cookies_alert_name);
+                Configuration::updateValue('Z_PRODUCT_RATING_NAME', $z_rating_name);
                 $output .= $this->displayConfirmation($this->l('Settings updated'));
             }
         }
