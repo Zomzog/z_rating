@@ -20,4 +20,11 @@
  * @license    http://www.gnu.org/licenses/  GNU GENERAL PUBLIC LICENSE (GPL-3.0)
  *
  */
-
+.rating {
+    display: inline-flex;
+    vertical-align: middle;
+    align-items: center;
+}
+.rating > i {
+    color: gold;
+}

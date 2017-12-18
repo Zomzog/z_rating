@@ -62,7 +62,7 @@ class Z_Rating extends Module
             Shop::setContext(Shop::CONTEXT_ALL);
 
         $installed  = parent::install() &&
-            $this->registerHook('displayFooter') &&
+            $this->registerHook('displayProductListReviews') &&
             $this->registerHook('header');
 
         if ($installed) {
@@ -78,13 +78,14 @@ class Z_Rating extends Module
     {
         Db::getInstance()->execute('
 		CREATE TABLE `'._DB_PREFIX_.'z_rating` (
+		    `id_rating` int(10) unsigned NOT NULL AUTO_INCREMENT,
 			`id_product` int(10) unsigned NOT NULL,
 			`id_shop` int(11) NOT NULL,
 			`id_customer` int(10) unsigned NOT NULL,
 			`id_order` int(10) unsigned NOT NULL,
 			`rate` INT NOT NULL,
 			`comment` VARCHAR(128),
-		PRIMARY KEY (`id_product`, `id_order`, `id_shop`),
+		PRIMARY KEY (`id_rating`),
 		INDEX `id_product` (`id_product`),
 		CONSTRAINT `z_rating_product` FOREIGN KEY (`id_product`) REFERENCES `'._DB_PREFIX_.'product` (`id_product`) ON DELETE NO ACTION ON UPDATE NO ACTION,
 		CONSTRAINT `z_rating_shop` FOREIGN KEY (`id_shop`) REFERENCES `'._DB_PREFIX_.'shop` (`id_shop`) ON DELETE NO ACTION ON UPDATE NO ACTION,
@@ -95,21 +96,27 @@ class Z_Rating extends Module
     }
 
     /**
-     * Hook to footer
+     * Hook to product list reviews
      * @param $params
      * @return mixed
      */
-    public function hookDisplayFooter($params)
+    public function hookDisplayProductListReviews($params)
     {
-        if ($this->context->cookie->zcookiealert != "accepted") {
-            $this->context->smarty->assign(
-                array(
-                    'z_product_rating_name' => Configuration::get('Z_PRODUCT_RATING_NAME'),
-                    'z_product_rating_message' => Configuration::get('Z_PRODUCT_RATING_MESSAGE'),
-                )
-            );
-            return $this->display(__FILE__, 'z_rating.tpl');
+        $productId = $params['product']['id_product'];
+        $rate = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
+            'SELECT SUM(`rate`) as r, COUNT(*) as c 
+			FROM '._DB_PREFIX_.'z_rating
+			WHERE `id_product` = '.(int) $productId
+        );
+        $r = $rate[0]['r'];
+        $c = $rate[0]['c'];
+        if($c > 0) {
+            $average = $r/$c;
+            $this->context->smarty->assign('rating', ['average' => $average, 'count' => $c]);
+        } else {
+            $this->context->smarty->assign('rating', null);
         }
+        return $this->display(__FILE__, 'z_rating.tpl');
     }
 
     /**
@@ -117,8 +124,8 @@ class Z_Rating extends Module
      */
     public function hookDisplayHeader()
     {
-        $this->context->controller->registerStylesheet('modules-z_productrating', 'modules/' . $this->name . '/views/css/z_productrating.css', ['media' => 'all', 'priority' => 150]);
-        $this->context->controller->registerJavascript('modules-z_productrating', 'modules/' . $this->name . '/views/js/z_productrating.js', ['position' => 'bottom', 'priority' => 150]);
+        $this->context->controller->registerStylesheet('modules-z_productrating', 'modules/' . $this->name . '/views/css/z_rating.css', ['media' => 'all', 'priority' => 150]);
+        $this->context->controller->registerJavascript('modules-z_productrating', 'modules/' . $this->name . '/views/js/z_rating.js', ['position' => 'bottom', 'priority' => 150]);
     }
 
     /**
