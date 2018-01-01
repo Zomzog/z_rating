@@ -23,7 +23,7 @@
 <!-- Block mymodule -->
 <span class="float-right rating" itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">
   {if $rating}
-    <span itemprop="ratingValue">{$rating.average}</span> <i class="material-icons">star</i>
+    <span itemprop="ratingValue">{$rating.average|string_format:"%.1f"}</span> <i class="material-icons">star</i>
     <meta itemprop="ratingCount" content="{$rating.count}"/>
   {/if}
 </span>

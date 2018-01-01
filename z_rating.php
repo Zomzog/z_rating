@@ -63,6 +63,7 @@ class Z_Rating extends Module
 
         $installed  = parent::install() &&
             $this->registerHook('displayProductListReviews') &&
+            $this->registerHook('displayProductAdditionalInfo') &&
             $this->registerHook('header');
 
         if ($installed) {
@@ -103,20 +104,53 @@ class Z_Rating extends Module
     public function hookDisplayProductListReviews($params)
     {
         $productId = $params['product']['id_product'];
-        $rate = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
-            'SELECT SUM(`rate`) as r, COUNT(*) as c 
+        $this->addRatingData($productId);
+        return $this->display(__FILE__, 'ratingStars.tpl');
+    }
+    /**
+     * Hook to product additional info
+     * @param $params
+     * @return mixed
+     */
+    public function hookDisplayProductAdditionalInfo($params)
+    {
+        $productId = Tools::getValue('id_product');
+        $this->addRatingData($productId);
+        $this->addReviewsData($productId);
+        return $this->display(__FILE__, 'reviews.tpl');
+    }
+
+    /**
+     * Add reviews of the product
+     * @param $productId
+     */
+    private function addReviewsData($productId){
+        $reviews = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
+            'SELECT * 
 			FROM '._DB_PREFIX_.'z_rating
 			WHERE `id_product` = '.(int) $productId
         );
-        $r = $rate[0]['r'];
-        $c = $rate[0]['c'];
-        if($c > 0) {
-            $average = $r/$c;
-            $this->context->smarty->assign('rating', ['average' => $average, 'count' => $c]);
+        $this->context->smarty->assign('reviews', $reviews);
+    }
+
+    /**
+     * Add rating data with rating count and rating average of the product
+     * @param $productId
+     */
+    private function addRatingData($productId){
+        $rate = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
+            'SELECT SUM(`rate`) as ratingSum, COUNT(*) as ratingCount 
+			FROM '._DB_PREFIX_.'z_rating
+			WHERE `id_product` = '.(int) $productId
+        );
+        $ratingCount = $rate[0]['ratingCount'];
+        if($ratingCount > 0) {
+            $ratingSum = $rate[0]['ratingSum'];
+            $average = $ratingSum/$ratingCount;
+            $this->context->smarty->assign('rating', ['average' => $average, 'count' => $ratingCount]);
         } else {
             $this->context->smarty->assign('rating', null);
         }
-        return $this->display(__FILE__, 'z_rating.tpl');
     }
 
     /**
