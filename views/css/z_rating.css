@@ -20,11 +20,18 @@
  * @license    http://www.gnu.org/licenses/  GNU GENERAL PUBLIC LICENSE (GPL-3.0)
  *
  */
-.rating {
-    display: inline-flex;
+.material-align {
     vertical-align: middle;
     align-items: center;
+    display: inline-flex;
 }
 .rating > i {
     color: gold;
+}
+
+.review {
+    box-shadow: 2px 2px 8px 0 rgba(0,0,0,.2);
+    margin-top: 2rem;
+    background: white;
+    padding: 1.25rem 1.875rem;
 }

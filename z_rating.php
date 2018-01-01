@@ -85,7 +85,7 @@ class Z_Rating extends Module
 			`id_customer` int(10) unsigned NOT NULL,
 			`id_order` int(10) unsigned NOT NULL,
 			`rate` INT NOT NULL,
-			`comment` VARCHAR(128),
+			`comment` VARCHAR(128) NOT NULL,
 		PRIMARY KEY (`id_rating`),
 		INDEX `id_product` (`id_product`),
 		CONSTRAINT `z_rating_product` FOREIGN KEY (`id_product`) REFERENCES `'._DB_PREFIX_.'product` (`id_product`) ON DELETE NO ACTION ON UPDATE NO ACTION,
@@ -126,8 +126,9 @@ class Z_Rating extends Module
      */
     private function addReviewsData($productId){
         $reviews = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
-            'SELECT * 
-			FROM '._DB_PREFIX_.'z_rating
+            'SELECT rating.rate as rate, rating.comment as comment, customer.firstname as customerName 
+			FROM '._DB_PREFIX_.'z_rating rating
+			LEFT JOIN `'._DB_PREFIX_.'customer` customer ON customer.`id_customer` = rating.`id_customer`
 			WHERE `id_product` = '.(int) $productId
         );
         $this->context->smarty->assign('reviews', $reviews);

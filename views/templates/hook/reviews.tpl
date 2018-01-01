@@ -22,17 +22,29 @@
 *}
 <!-- Block mymodule -->
 {if $rating}
-<span class="float-right rating" itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">
-    <span itemprop="ratingValue">{$rating.average}</span> <i class="material-icons">star</i>
+<span class="rating material-align" itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">
+    <span itemprop="ratingValue">{$rating.average|string_format:"%.1f"}</span> <i class="material-icons">star</i>
     <meta itemprop="ratingCount" content="{$rating.count}"/>
 </span>
 {/if}
 {if $reviews}
     {foreach from=$reviews item=review}
-        <div>
-            Customer : {$review.id_customer}
-            Rating : {$review.rate}
-            Comment : {$review.comment}
+        <div class="review" itemprop="review" itemscope itemtype="http://schema.org/Review">
+            <span class="author" itemprop="author">{$review.customerName}</span> -
+            <meta itemprop="datePublished" content="2011-04-01">April 1, 2011
+            <div class="rating" itemprop="reviewRating" itemscope itemtype="http://schema.org/Rating">
+                <meta itemprop="worstRating" content = "1"/>
+                <meta itemprop="ratingValue" content="{$review.rate}"/>
+                <meta itemprop="bestRating" content="5"/>
+                {for $i=1 to 5}
+                    {if $i<=$review.rate}
+                        <i class="material-icons">star</i>
+                    {else}
+                        <i class="material-icons">star_border</i>
+                    {/if}
+                {/for}
+            </div>
+            <div itemprop="description">{$review.comment}</div>
         </div>
     {/foreach}
 {/if}
