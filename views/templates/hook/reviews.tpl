@@ -22,10 +22,36 @@
 *}
 <!-- Block mymodule -->
 {if $rating}
-<span class="rating material-align" itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">
-    <span itemprop="ratingValue">{$rating.average|string_format:"%.1f"}</span> <i class="material-icons">star</i>
-    <meta itemprop="ratingCount" content="{$rating.count}"/>
-</span>
+    <div>
+        <span class="rating material-align" itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">
+            <span itemprop="ratingValue">{$rating.average}</span> <i class="material-icons">star</i>
+
+            {for $i=1 to 5}
+                {if $i<=$rating.average}
+                    <i class="material-icons">star</i>
+                {elseif $i<$rating.average+1}
+                    <i class="material-icons">star_half</i>
+                {else}
+                    <i class="material-icons">star_border</i>
+                {/if}
+            {/for}
+            <span itemprop="ratingCount" content="{$rating.count}">({$rating.count})</span>
+        </span>
+        <table class="ratingResume">
+            {for $r=5 to 1 step -1}
+                {assign var="percent" value="{$ratingCounters[$r]/{$rating.count}*100}"}
+                <tr>
+                    <td class="stars">{$r} étoiles</td>
+                    <td class="progressBar">
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" style="width: {$percent}%" aria-valuenow="{$ratingCounters[$r]}" aria-valuemin="0" aria-valuemax="{$rating.count}"></div>
+                        </div>
+                    </td>
+                    <td class="percent">{$percent|string_format:"%d"}%</td>
+                </tr>
+            {/for}
+        </table>
+    </div>
 {/if}
 {if $reviews}
     {foreach from=$reviews item=review}

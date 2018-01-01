@@ -117,6 +117,7 @@ class Z_Rating extends Module
         $productId = Tools::getValue('id_product');
         $this->addRatingData($productId);
         $this->addReviewsData($productId);
+        $this->addRatingCounters($productId);
         return $this->display(__FILE__, 'reviews.tpl');
     }
 
@@ -124,7 +125,8 @@ class Z_Rating extends Module
      * Add reviews of the product
      * @param $productId
      */
-    private function addReviewsData($productId){
+    private function addReviewsData($productId)
+    {
         $reviews = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
             'SELECT rating.rate as rate, rating.comment as comment, customer.firstname as customerName 
 			FROM '._DB_PREFIX_.'z_rating rating
@@ -132,6 +134,26 @@ class Z_Rating extends Module
 			WHERE `id_product` = '.(int) $productId
         );
         $this->context->smarty->assign('reviews', $reviews);
+    }
+
+    /**
+     * Add count of each rating value
+     * @param $productId
+     */
+    private function addRatingCounters($productId)
+    {
+        $ratingCounters = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
+            'SELECT rating.rate as rate, count(*) as rateCount
+			FROM '._DB_PREFIX_.'z_rating rating
+			WHERE `id_product` = '.(int) $productId.'
+            GROUP BY rating.rate'
+        );
+
+        $result = array(0,0,0,0,0);
+        foreach ($ratingCounters as $r){
+            $result[(int)$r['rate']] = $r['rateCount'];
+        }
+        $this->context->smarty->assign('ratingCounters', $result);
     }
 
     /**
@@ -148,7 +170,7 @@ class Z_Rating extends Module
         if($ratingCount > 0) {
             $ratingSum = $rate[0]['ratingSum'];
             $average = $ratingSum/$ratingCount;
-            $this->context->smarty->assign('rating', ['average' => $average, 'count' => $ratingCount]);
+            $this->context->smarty->assign('rating', ['average' => round($average, 1), 'count' => $ratingCount]);
         } else {
             $this->context->smarty->assign('rating', null);
         }

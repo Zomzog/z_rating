@@ -31,7 +31,29 @@
 
 .review {
     box-shadow: 2px 2px 8px 0 rgba(0,0,0,.2);
-    margin-top: 2rem;
+    margin-top: 1rem;
     background: white;
     padding: 1.25rem 1.875rem;
+}
+
+.ratingResume {
+    min-width: 10rem;
+    max-width: 15rem;
+    box-shadow: 2px 2px 8px 0 rgba(0,0,0,.2);
+    margin-top: 1rem;
+    background: white;
+    padding: 1.25rem 1.875rem;
+}
+.ratingResume td {
+    padding: 0.25rem 0.25rem;
+}
+
+.ratingResume .stars {
+    min-width: 5rem;
+    width: 20%;
+}
+.ratingResume .percent {
+    min-width: 2rem;
+    width: 10%;
+    text-align: right;
 }
